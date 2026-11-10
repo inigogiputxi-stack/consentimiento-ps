@@ -20,9 +20,9 @@ canvas#fm{width:100%;height:150px;background:#fff;border:1px dashed #789;border-
 .x{position:absolute;transform:translate(-50%,-50%);color:#d00;font-weight:900;font-size:20px;line-height:1;pointer-events:none}
 .h{position:absolute;transform:translate(-50%,-50%);aspect-ratio:1;border-radius:50%;background:#e11d48;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;pointer-events:none}
 table{width:100%;border-collapse:collapse;margin-top:8px;background:#fff}td,th{padding:8px;border-bottom:1px solid #dde;text-align:left;font-size:14px}
-.c{font-size:13px;color:#456;margin:6px 0}.warn{color:#b00}
+.g{display:flex;gap:12px;align-items:flex-start}.g .body{flex:0 0 46%}.g .tb{flex:1;min-width:0}.g .tb p{margin-top:0}.c{font-size:13px;color:#456;margin:6px 0}.warn{color:#b00}
 #pd{display:none}
-@media print{body>*{display:none!important}#pd{display:block!important}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}#pd .card{box-shadow:none;border:1px solid #999;break-inside:avoid}}
+@media print{body{background:#fff}body>*{display:none!important}#pd{display:block!important}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}#pd .card{box-shadow:none;border:1px solid #999;break-inside:avoid}}
 </style></head><body>
 <header><img src="icon-192.png" alt=""><h1>CENTRO DE FISIOTERAPIA<br>FISIOPUNCIONSECA</h1><button id="bk" hidden>←</button></header>
 
@@ -30,7 +30,7 @@ table{width:100%;border-collapse:collapse;margin-top:8px;background:#fff}td,th{p
 <label>Buscar paciente</label><input id="q" placeholder="Escribe un nombre…" autocomplete="off">
 <div id="lst"></div>
 <button class="fab" id="plus" aria-label="Paciente nuevo">+</button>
-<p class="c" style="margin-top:40px">Copia de seguridad: <button class="s" id="ex">Exportar</button><button class="s" onclick="im.click()">Importar</button><input type="file" id="im" accept=".json" hidden></p>
+<p class="c" style="margin-top:40px">Copia de seguridad (v3): <button class="s" id="ex">Exportar</button><button class="s" onclick="im.click()">Importar</button><input type="file" id="im" accept=".json" hidden></p>
 </section>
 
 <section id="i1" hidden>
@@ -106,6 +106,7 @@ const cv=$('#fm'),cx=cv.getContext('2d');let dr=false,signed=false;cx.lineWidth=
 const pos=e=>{const r=cv.getBoundingClientRect();return[(e.clientX-r.left)*cv.width/r.width,(e.clientY-r.top)*cv.height/r.height]};
 cv.onpointerdown=e=>{dr=true;signed=true;cv.setPointerCapture(e.pointerId);cx.beginPath();cx.moveTo(...pos(e))};
 cv.onpointermove=e=>{if(dr){cx.lineTo(...pos(e));cx.stroke()}};cv.onpointerup=()=>dr=false;
+const sig=()=>{const o=document.createElement('canvas');o.width=cv.width;o.height=cv.height;const x=o.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,o.width,o.height);x.drawImage(cv,0,0);return o.toDataURL('image/jpeg',.85)};
 const clr=()=>{cx.clearRect(0,0,cv.width,cv.height);signed=false};$('#cf').onclick=clr;
 $('#f0').value=today();$('#f1').value=today();
 
@@ -113,7 +114,7 @@ $('#g0').onclick=()=>{
  const n=$('#n').value.trim(),c=document.querySelector('[name=co]:checked');
  if(!n)return alert('Falta el nombre');if(!c)return alert('Marca si consiente o no');
  if(c.value=='1'&&!signed)return alert('Falta la firma');
- const p={id:Date.now().toString(36),n,t:$('#t').value,d:$('#d').value,b:$('#b').value,f:$('#f0').value,ok:c.value=='1',fi:c.value=='1'?cv.toDataURL():''};
+ const p={id:Date.now().toString(36),n,t:$('#t').value,d:$('#d').value,b:$('#b').value,f:$('#f0').value,ok:c.value=='1',fi:c.value=='1'?sig():''};
  db.p.push(p);save();
  ['n','t','d','b'].forEach(i=>$('#'+i).value='');document.querySelectorAll('[name=co]').forEach(r=>r.checked=false);clr();
  if(p.ok)op(p.id);else{alert('Guardado: NO consiente, no se puede realizar punción seca.');go('home')}};
@@ -138,10 +139,9 @@ function inf(el){const p=db.p.find(x=>x.id==pid);el=el||$('#io');if(!p)return;
   if(c){c.x=(c.x*c.n+x)/(c.n+1);c.y=(c.y*c.n+y)/(c.n+1);c.n++}else cl.push({x,y,n:1})});
  const tot=ss.reduce((a,s)=>a+s.pts.length,0);
  el.innerHTML=`<h2>${esc(p.n)}</h2><p class="c">Consentimiento: ${p.ok?'SÍ':'<span class="warn">NO</span>'} (${p.f})</p>
- <div class="body" style="touch-action:auto"><img src="cuerpo2.png" alt="">${cl.map(c=>{const r=14+9*Math.sqrt(c.n);
+ <div class="g"><div class="body" style="touch-action:auto"><img src="cuerpo2.png" alt="">${cl.map(c=>{const r=14+9*Math.sqrt(c.n);
   return `<div class="h" style="left:${c.x/W*100}%;top:${c.y/H*100}%;width:${2*r/W*100}%;opacity:${Math.min(.35+.1*c.n,.9)}">${c.n}</div>`}).join('')}</div>
- <p class="c">Más grande e intenso = zona más pinchada (el número son los pinchazos en esa zona).</p>
- <table><tr><th>Fecha</th><th>Nº pinchazos</th></tr>${ss.map(s=>`<tr><td>${s.f}${s.m==2?'':' <span class="c">(modelo anterior, no se dibuja)</span>'}</td><td>${s.pts.length}</td></tr>`).join('')}<tr><th>Total</th><th>${tot}</th></tr></table>`;if(el.id=='io')el.insertAdjacentHTML('beforeend','<p class="c">'+RG+'</p>')}
+ <div class="tb"><p class="c">Más grande e intenso = zona más pinchada (el número son los pinchazos en esa zona).</p><table><tr><th>Fecha</th><th>Nº pinchazos</th></tr>${ss.map(s=>`<tr><td>${s.f}${s.m==2?'':' <span class="c">(modelo anterior, no se dibuja)</span>'}</td><td>${s.pts.length}</td></tr>`).join('')}<tr><th>Total</th><th>${tot}</th></tr></table></div></div>`;if(el.id=='io')el.insertAdjacentHTML('beforeend','<p class="c">'+RG+'</p>')}
 
 // Copia de seguridad
 $('#ex').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(db)],{type:'application/json'}));a.download='puncion-seca-'+today()+'.json';a.click()};
