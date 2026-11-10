@@ -148,10 +148,10 @@ $('#ex').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjec
 $('#im').onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{try{const d=JSON.parse(t);if(!d.p||!d.s)throw 0;
  if(confirm('Esto reemplaza los datos actuales. ¿Continuar?')){db=d;save();go('home')}}catch(x){alert('Archivo no válido')}})};
 $('#i1 .ct').innerHTML=I1;$('#i2 .ct').innerHTML=I2;$('#i3 .ct').innerHTML=I3;
-function pdoc(){const p=db.p.find(x=>x.id==pid);if(!p)return;const d=document.createElement('div');inf(d);
+async function pdoc(){const p=db.p.find(x=>x.id==pid);if(!p)return;const d=document.createElement('div');inf(d);
  $('#pd').innerHTML=`<h1 style="font-size:17px;text-align:center">CENTRO DE FISIOTERAPIA FISIOPUNCIONSECA<br>Consentimiento informado de punción seca</h1>${I1}${I2}${I3}
- <div class="card"><h3>Datos del paciente</h3>Nombre: <b>${esc(p.n)}</b><br>Teléfono: ${esc(p.t||'')}<br>DNI: ${esc(p.d||'')}<br>Fecha de nacimiento: ${p.b||''}<br>Fecha: ${p.f}<br>He recibido la información oral sobre la punción seca y <b>${p.ok?'SÍ consiento':'NO consiento'}</b> que esta terapia forme parte del trabajo rehabilitador.${p.fi?'<br>Firma:<br><img alt="" src="'+p.fi+'" style="height:90px">':''}</div>
- <div style="break-before:page"><h3>Informe de punción seca</h3>${d.innerHTML}</div><p style="font-size:11px">${RG}</p>`;print()}
+ <div class="card"><h3>Datos del paciente</h3>Nombre: <b>${esc(p.n)}</b><br>Teléfono: ${esc(p.t||'')}<br>DNI: ${esc(p.d||'')}<br>Fecha de nacimiento: ${p.b||''}<br>Fecha: ${p.f}<br>He recibido la información oral sobre la punción seca y <b>${p.ok?'SÍ consiento':'NO consiento'}</b> que esta terapia forme parte del trabajo rehabilitador.${p.fi?'<br>Firma:<br><img alt="" src="'+p.fi+'" style="height:90px;background:#fff;border:1px solid #999">':p.ok?'<br><i>Firma no registrada</i>':''}</div>
+ <div style="break-before:page"><h3>Informe de punción seca</h3>${d.innerHTML}</div><p style="font-size:11px">${RG}</p>`;await Promise.all([...$('#pd').querySelectorAll('img')].map(i=>i.decode().catch(()=>0)));setTimeout(print,300)}
 $('#pr').onclick=pdoc;
 $('#dp').onclick=()=>{const p=db.p.find(x=>x.id==pid);if(p&&confirm('¿Eliminar a '+p.n+' y todas sus sesiones? No se puede deshacer.')){db.p=db.p.filter(x=>x.id!=pid);db.s=db.s.filter(s=>s.pid!=pid);save();pid=null;go('home')}};
 go('home');
