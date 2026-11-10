@@ -2,17 +2,18 @@
 <style>
 :root{--t:#2f9a96;--d:#1f6f6c;--bg:#f2f7f7;--tx:#1d2b2b}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,sans-serif;background:var(--bg);color:var(--tx)}
-header{background:var(--t);color:#fff;display:flex;gap:10px;align-items:center;padding:10px 12px}
-header img{width:44px;height:44px;border-radius:50%}header h1{font-size:15px;margin:0;line-height:1.2}
-nav{display:flex;position:sticky;top:0;z-index:5;background:#fff;box-shadow:0 1px 4px #0002}
-nav button{flex:1;padding:13px 4px;border:0;background:none;font-size:14px;font-weight:600;color:#567;border-bottom:3px solid transparent}
-nav button.on{color:var(--d);border-color:var(--t)}
-section{padding:12px;max-width:760px;margin:auto}
+header{background:var(--t);color:#fff;display:flex;gap:10px;align-items:center;padding:10px 12px;position:sticky;top:0;z-index:5}
+header img{width:44px;height:44px;border-radius:50%}header h1{font-size:15px;margin:0;line-height:1.2;flex:1}
+#bk{background:#fff3;color:#fff;border:0;border-radius:8px;font-size:22px;padding:6px 14px}
+section{padding:14px;max-width:760px;margin:auto}h2{margin:4px 0 10px;color:var(--d)}
 label{display:block;font-size:13px;font-weight:600;margin:10px 0 3px}
 input,select{width:100%;padding:11px;border:1px solid #9bb;border-radius:8px;font-size:16px;background:#fff}
 .r{display:flex;gap:16px;margin:8px 0}.r label{display:flex;align-items:center;gap:6px;font-weight:500;margin:0}.r input{width:auto}
 button.p,button.s{padding:12px 16px;border:0;border-radius:8px;font-size:15px;font-weight:600;margin:8px 6px 0 0}
 button.p{background:var(--t);color:#fff}button.s{background:#dde;color:#223}
+.card{background:#fff;border-radius:10px;padding:14px;margin:10px 0;line-height:1.5;box-shadow:0 1px 3px #0002}.card h3{margin:0 0 6px;color:var(--d)}
+.card li{margin:4px 0}.it{background:#fff;padding:14px;margin:6px 0;border-radius:8px;box-shadow:0 1px 3px #0002}
+.fab{position:fixed;right:20px;bottom:24px;width:68px;height:68px;border-radius:50%;border:0;background:var(--t);color:#fff;font-size:42px;box-shadow:0 3px 8px #0005}
 canvas#fm{width:100%;height:150px;background:#fff;border:1px dashed #789;border-radius:8px;touch-action:none}
 .body{position:relative;background:#fff;border:1px solid #9bb;border-radius:8px;touch-action:none;user-select:none}
 .body img{width:100%;display:block;pointer-events:none}
@@ -20,12 +21,35 @@ canvas#fm{width:100%;height:150px;background:#fff;border:1px dashed #789;border-
 .h{position:absolute;transform:translate(-50%,-50%);aspect-ratio:1;border-radius:50%;background:#e11d48;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;pointer-events:none}
 table{width:100%;border-collapse:collapse;margin-top:8px;background:#fff}td,th{padding:8px;border-bottom:1px solid #dde;text-align:left;font-size:14px}
 .c{font-size:13px;color:#456;margin:6px 0}.warn{color:#b00}
-@media print{nav,header,button,.noprint{display:none!important}}
+#pd{display:none}
+@media print{body>*{display:none!important}#pd{display:block!important}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}#pd .card{box-shadow:none;border:1px solid #999;break-inside:avoid}}
 </style></head><body>
-<header><img src="icon-192.png" alt=""><h1>CENTRO DE FISIOTERAPIA<br>FISIOPUNCIONSECA</h1></header>
-<nav><button>Paciente nuevo</button><button>Registrado</button><button>Informe</button></nav>
+<header><img src="icon-192.png" alt=""><h1>CENTRO DE FISIOTERAPIA<br>FISIOPUNCIONSECA</h1><button id="bk" hidden>←</button></header>
 
-<section>
+<section id="home">
+<label>Buscar paciente</label><input id="q" placeholder="Escribe un nombre…" autocomplete="off">
+<div id="lst"></div>
+<button class="fab" id="plus" aria-label="Paciente nuevo">+</button>
+<p class="c" style="margin-top:40px">Copia de seguridad: <button class="s" id="ex">Exportar</button><button class="s" onclick="im.click()">Importar</button><input type="file" id="im" accept=".json" hidden></p>
+</section>
+
+<section id="i1" hidden>
+<div class="ct"></div>
+<button class="p" onclick="go('i2')">Siguiente</button>
+</section>
+
+<section id="i2" hidden>
+<div class="ct"></div>
+<button class="p" onclick="go('i3')">Siguiente</button>
+</section>
+
+<section id="i3" hidden>
+<div class="ct"></div>
+<button class="p" onclick="go('form')">Siguiente</button>
+</section>
+
+<section id="form" hidden>
+<h2>Registro de paciente</h2>
 <label>Nombre y apellidos</label><input id="n">
 <label>Teléfono</label><input id="t" type="tel">
 <label>DNI</label><input id="d">
@@ -39,45 +63,49 @@ table{width:100%;border-collapse:collapse;margin-top:8px;background:#fff}td,th{p
 <p class="c">Datos tratados conforme al RGPD (responsable: Iñigo Mateos Salagre). Se guardan solo en este dispositivo.</p>
 </section>
 
-<section hidden>
-<label>Paciente</label><select id="sr"></select>
+<section id="pat" hidden>
+<h2 id="pn"></h2>
+<p class="warn" id="nok" hidden>Este paciente NO consiente la punción seca.</p>
+<div><button class="s" id="pr">Imprimir consentimiento</button><button class="s" id="dp" style="color:#b00">Eliminar paciente</button></div>
+<div id="reg">
+<button class="s" onclick="go('inf')">Ver informe</button>
 <label>Fecha</label><input id="f1" type="date">
 <p class="c">Toca el modelo con el lápiz (o el dedo) para marcar cada pinchazo. <b id="k">0</b> marcados.</p>
-<div class="body" id="bp"><img src="cuerpo.png" alt=""></div>
+<div class="body" id="bp"><img src="cuerpo2.png" alt=""></div>
 <button class="s" id="u">Deshacer</button><button class="s" id="cl">Limpiar</button><button class="p" id="g1">Guardar sesión</button>
-<h3>Sesiones del paciente</h3><div id="hi"></div>
+<h3>Sesiones</h3><div id="hi"></div></div>
 </section>
 
-<section hidden>
-<label>Paciente</label><select id="si"></select>
-<div id="inf"></div>
-<button class="p noprint" onclick="print()">Imprimir / PDF</button>
-<hr class="noprint"><div class="noprint"><b>Copia de seguridad</b><br>
-<button class="s" id="ex">Exportar</button><button class="s" onclick="im.click()">Importar</button><input type="file" id="im" accept=".json" hidden></div>
-</section>
+<section id="inf" hidden><div id="io"></div><button class="p noprint" onclick="pdoc()">Imprimir consentimiento + informe</button></section>
 
+<div id="pd"></div>
 <script>
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const nm=s=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
 const today=()=>new Date().toISOString().slice(0,10);
-let db=JSON.parse(localStorage.getItem('ps_db')||'null')||{p:[],s:[]};
+let db=JSON.parse(localStorage.getItem('ps_db')||'null')||{p:[],s:[]},pid=null,cur=[];
 const save=()=>{try{localStorage.setItem('ps_db',JSON.stringify(db))}catch(e){alert('Almacenamiento lleno. Exporta una copia y libera espacio.')}};
-const W=1080,H=870;
+const W=1080,H=1157,par={i1:'home',i2:'i1',i3:'i2',form:'i3',pat:'home',inf:'pat'};
 
-function show(n){$$('section').forEach((s,i)=>s.hidden=i!=n);$$('nav button').forEach((b,i)=>b.classList.toggle('on',i==n));
- if(n==1){fill('#sr',true);hist()}if(n==2){fill('#si',false);inf()}}
-$$('nav button').forEach((b,i)=>b.onclick=()=>show(i));
-function fill(sel,onlyOk,keep){const el=$(sel),v=keep||el.value;
- el.innerHTML=db.p.filter(p=>!onlyOk||p.ok).map(p=>`<option value="${p.id}">${esc(p.n)}</option>`).join('')||'<option value="">(sin pacientes)</option>';
- if(v)el.value=v}
+const I1='<div class="card"><h3>¿En qué consiste la punción seca?</h3>Es una técnica invasiva porque se produce la entrada por la piel sin infiltración de ningún tipo de líquido. El tratamiento se lleva a cabo utilizando una aguja de acupuntura, con la que, previa asepsia cutánea de la zona a tratar, se incide directamente el punto gatillo miofascial (PGM), realizando varios abordajes sobre éste sin llegar a extraer la aguja. Se puede realizar un máximo de dos sesiones semanales ya que precisa de 24-48 de descanso para recuperar la lesión controlada.<br><br>Si tras la tercera sesión no se alcanza ninguna mejoría, el tratamiento se suspendería, y se establecerían como alternativa al mismo, pautas de fisioterapia de tipo conservador. La técnica en cuestión es realizada por fisioterapeutas que han sido formados para poder aplicarla con plenas garantías.</div><div class="card"><h3>¿Qué es un punto gatillo?</h3>Un punto gatillo miofascial (PGM), es una zona de contractura situada dentro de una banda tensa muscular. El punto resulta doloroso a la compresión, puede evocar un dolor referido característico de dicho músculo.</div>',
+I2='<div class="card"><h3>Posibles efectos secundarios</h3><ul><li>Dolor post-punción</li><li>Hematomas-sangrado</li><li>Fatiga o mareo</li><li>Sensibilidad en la zona</li><li>Neumotórax</li><li>Infecciones leves de la piel</li></ul></div>',
+I3='<div class="card"><h3>Contraindicaciones</h3><ul><li>Infecciones o lesiones de la piel</li><li>Trastornos severos de coagulación</li><li>Inmunosupresión severa</li></ul>Precaución en embarazadas y linfedemas.</div>',
+RG='Le informamos, conforme a lo previsto en el RGPD de 27 de abril de 2016 que IÑIGO MATEOS SALAGRE, recaba y trata sus datos de carácter personal, aplicando las medidas técnicas y organizativas que garantizan su confidencialidad, con la finalidad de gestionar la relación que le vincula. Usted da su consentimiento y autorización para dicho tratamiento. Conservaremos sus datos de carácter personal únicamente el tiempo imprescindible para gestionar nuestra relación. Podrá ejercitar los derechos de acceso, rectificación, supresión, limitación, portabilidad y oposición dirigiéndose a IÑIGO MATEOS SALAGRE con dirección C/ JAVIER DE BARKAIZTEGI, Nº3 BAJO ESTE, SAN SEBASTIÁN, 20010, GIPUZKOA.';
+function go(v){$$('section').forEach(s=>s.hidden=s.id!=v);$('#bk').hidden=v=='home';$('#bk').dataset.v=v;scrollTo(0,0);$('#plus').hidden=v!='home';
+ if(v=='home')lst();if(v=='pat')pv();if(v=='inf')inf()}
+$('#bk').onclick=()=>go(par[$('#bk').dataset.v]);
+$('#plus').onclick=()=>go('i1');
+$('#q').oninput=lst;
+function lst(){const q=nm($('#q').value.trim());
+ $('#lst').innerHTML=q?(db.p.filter(p=>nm(p.n).includes(q)).map(p=>`<div class="it" onclick="op('${p.id}')">${esc(p.n)}${p.ok?'':' <span class="warn">· no consiente</span>'}</div>`).join('')||'<p class="c">Sin resultados.</p>'):''}
+function op(id){pid=id;cur=[];go('pat')}
 
 // Firma
-const cv=$('#fm'),cx=cv.getContext('2d');let dr=false,signed=false;
-cx.lineWidth=3;cx.lineCap='round';
+const cv=$('#fm'),cx=cv.getContext('2d');let dr=false,signed=false;cx.lineWidth=3;cx.lineCap='round';
 const pos=e=>{const r=cv.getBoundingClientRect();return[(e.clientX-r.left)*cv.width/r.width,(e.clientY-r.top)*cv.height/r.height]};
 cv.onpointerdown=e=>{dr=true;signed=true;cv.setPointerCapture(e.pointerId);cx.beginPath();cx.moveTo(...pos(e))};
-cv.onpointermove=e=>{if(dr){cx.lineTo(...pos(e));cx.stroke()}};
-cv.onpointerup=()=>dr=false;
+cv.onpointermove=e=>{if(dr){cx.lineTo(...pos(e));cx.stroke()}};cv.onpointerup=()=>dr=false;
 const clr=()=>{cx.clearRect(0,0,cv.width,cv.height);signed=false};$('#cf').onclick=clr;
 $('#f0').value=today();$('#f1').value=today();
 
@@ -88,42 +116,44 @@ $('#g0').onclick=()=>{
  const p={id:Date.now().toString(36),n,t:$('#t').value,d:$('#d').value,b:$('#b').value,f:$('#f0').value,ok:c.value=='1',fi:c.value=='1'?cv.toDataURL():''};
  db.p.push(p);save();
  ['n','t','d','b'].forEach(i=>$('#'+i).value='');document.querySelectorAll('[name=co]').forEach(r=>r.checked=false);clr();
- if(p.ok){show(1);fill('#sr',true,p.id);hist()}else alert('Guardado: NO consiente, no se puede realizar punción seca.')};
+ if(p.ok)op(p.id);else{alert('Guardado: NO consiente, no se puede realizar punción seca.');go('home')}};
 
-// Marcado de puntos
-let cur=[];
+// Registro de puntos
+function pv(){const p=db.p.find(x=>x.id==pid);if(!p)return go('home');
+ $('#pn').textContent=p.n;$('#reg').hidden=!p.ok;$('#nok').hidden=p.ok;draw();hist()}
 function draw(){const b=$('#bp');b.querySelectorAll('.x').forEach(n=>n.remove());
  cur.forEach(p=>{const s=document.createElement('span');s.className='x';s.textContent='✕';s.style.left=p.x*100+'%';s.style.top=p.y*100+'%';b.appendChild(s)});$('#k').textContent=cur.length}
 $('#bp').onpointerdown=e=>{e.preventDefault();const r=e.currentTarget.getBoundingClientRect();
  cur.push({x:+((e.clientX-r.left)/r.width).toFixed(4),y:+((e.clientY-r.top)/r.height).toFixed(4)});draw()};
 $('#u').onclick=()=>{cur.pop();draw()};$('#cl').onclick=()=>{cur=[];draw()};
-$('#sr').onchange=()=>{cur=[];draw();hist()};
-$('#g1').onclick=()=>{const pid=$('#sr').value;
- if(!pid)return alert('Elige un paciente (con consentimiento)');if(!cur.length)return alert('Marca al menos un punto');
- db.s.push({id:Date.now().toString(36),pid,f:$('#f1').value||today(),pts:cur});save();cur=[];draw();hist()};
-function hist(){const pid=$('#sr').value;
- $('#hi').innerHTML=db.s.filter(s=>s.pid==pid).sort((a,b)=>b.f.localeCompare(a.f)).map(s=>`<p class="c">${s.f} · <b>${s.pts.length}</b> pinchazos <button class="s" onclick="del('${s.id}')">Borrar</button></p>`).join('')||'<p class="c">Sin sesiones.</p>'}
-function del(id){if(confirm('¿Borrar sesión?')){db.s=db.s.filter(s=>s.id!=id);save();hist();inf()}}
+$('#g1').onclick=()=>{if(!cur.length)return alert('Marca al menos un punto');
+ db.s.push({id:Date.now().toString(36),pid,m:2,f:$('#f1').value||today(),pts:cur});save();cur=[];draw();hist()};
+function hist(){$('#hi').innerHTML=db.s.filter(s=>s.pid==pid).sort((a,b)=>b.f.localeCompare(a.f)).map(s=>`<p class="c">${s.f} · <b>${s.pts.length}</b> pinchazos <button class="s" onclick="del('${s.id}')">Borrar</button></p>`).join('')||'<p class="c">Sin sesiones.</p>'}
+function del(id){if(confirm('¿Borrar sesión?')){db.s=db.s.filter(s=>s.id!=id);save();hist()}}
 
 // Informe
-$('#si').onchange=inf;
-function inf(){const pid=$('#si').value,p=db.p.find(x=>x.id==pid),el=$('#inf');
- if(!p){el.innerHTML='';return}
+function inf(el){const p=db.p.find(x=>x.id==pid);el=el||$('#io');if(!p)return;
  const ss=db.s.filter(s=>s.pid==pid).sort((a,b)=>a.f.localeCompare(b.f)),cl=[];
- ss.flatMap(s=>s.pts).forEach(q=>{const x=q.x*W,y=q.y*H;
-  const c=cl.find(c=>Math.hypot(c.x-x,c.y-y)<40);
+ ss.filter(s=>s.m==2).flatMap(s=>s.pts).forEach(q=>{const x=q.x*W,y=q.y*H,c=cl.find(c=>Math.hypot(c.x-x,c.y-y)<40);
   if(c){c.x=(c.x*c.n+x)/(c.n+1);c.y=(c.y*c.n+y)/(c.n+1);c.n++}else cl.push({x,y,n:1})});
  const tot=ss.reduce((a,s)=>a+s.pts.length,0);
- el.innerHTML=`<h2>${esc(p.n)}</h2><p class="c">Consentimiento: ${p.ok?'SÍ':'<span class=warn>NO</span>'} (${p.f})</p>
- <div class="body" style="touch-action:auto"><img src="cuerpo.png" alt="">${cl.map(c=>{const r=14+9*Math.sqrt(c.n);
+ el.innerHTML=`<h2>${esc(p.n)}</h2><p class="c">Consentimiento: ${p.ok?'SÍ':'<span class="warn">NO</span>'} (${p.f})</p>
+ <div class="body" style="touch-action:auto"><img src="cuerpo2.png" alt="">${cl.map(c=>{const r=14+9*Math.sqrt(c.n);
   return `<div class="h" style="left:${c.x/W*100}%;top:${c.y/H*100}%;width:${2*r/W*100}%;opacity:${Math.min(.35+.1*c.n,.9)}">${c.n}</div>`}).join('')}</div>
- <p class="c">Más grande y más intenso = zona más pinchada (número = pinchazos en esa zona).</p>
- <table><tr><th>Fecha</th><th>Nº pinchazos</th></tr>${ss.map(s=>`<tr><td>${s.f}</td><td>${s.pts.length}</td></tr>`).join('')}<tr><th>Total</th><th>${tot}</th></tr></table>`}
+ <p class="c">Más grande e intenso = zona más pinchada (el número son los pinchazos en esa zona).</p>
+ <table><tr><th>Fecha</th><th>Nº pinchazos</th></tr>${ss.map(s=>`<tr><td>${s.f}${s.m==2?'':' <span class="c">(modelo anterior, no se dibuja)</span>'}</td><td>${s.pts.length}</td></tr>`).join('')}<tr><th>Total</th><th>${tot}</th></tr></table>`;if(el.id=='io')el.insertAdjacentHTML('beforeend','<p class="c">'+RG+'</p>')}
 
 // Copia de seguridad
 $('#ex').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(db)],{type:'application/json'}));a.download='puncion-seca-'+today()+'.json';a.click()};
 $('#im').onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{try{const d=JSON.parse(t);if(!d.p||!d.s)throw 0;
- if(confirm('Esto reemplaza los datos actuales. ¿Continuar?')){db=d;save();show(2)}}catch(x){alert('Archivo no válido')}})};
-show(0);
+ if(confirm('Esto reemplaza los datos actuales. ¿Continuar?')){db=d;save();go('home')}}catch(x){alert('Archivo no válido')}})};
+$('#i1 .ct').innerHTML=I1;$('#i2 .ct').innerHTML=I2;$('#i3 .ct').innerHTML=I3;
+function pdoc(){const p=db.p.find(x=>x.id==pid);if(!p)return;const d=document.createElement('div');inf(d);
+ $('#pd').innerHTML=`<h1 style="font-size:17px;text-align:center">CENTRO DE FISIOTERAPIA FISIOPUNCIONSECA<br>Consentimiento informado de punción seca</h1>${I1}${I2}${I3}
+ <div class="card"><h3>Datos del paciente</h3>Nombre: <b>${esc(p.n)}</b><br>Teléfono: ${esc(p.t||'')}<br>DNI: ${esc(p.d||'')}<br>Fecha de nacimiento: ${p.b||''}<br>Fecha: ${p.f}<br>He recibido la información oral sobre la punción seca y <b>${p.ok?'SÍ consiento':'NO consiento'}</b> que esta terapia forme parte del trabajo rehabilitador.${p.fi?'<br>Firma:<br><img alt="" src="'+p.fi+'" style="height:90px">':''}</div>
+ <div style="break-before:page"><h3>Informe de punción seca</h3>${d.innerHTML}</div><p style="font-size:11px">${RG}</p>`;print()}
+$('#pr').onclick=pdoc;
+$('#dp').onclick=()=>{const p=db.p.find(x=>x.id==pid);if(p&&confirm('¿Eliminar a '+p.n+' y todas sus sesiones? No se puede deshacer.')){db.p=db.p.filter(x=>x.id!=pid);db.s=db.s.filter(s=>s.pid!=pid);save();pid=null;go('home')}};
+go('home');
 if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');
 </script></body></html>
